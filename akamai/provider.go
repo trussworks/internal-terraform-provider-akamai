@@ -1,11 +1,12 @@
-package main
+package akamai
 
 import (
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform/terraform"
 )
 
-// Provider is the entry point to the provider
-func Provider() *schema.Provider {
+// Provider returns a terraform.ResourceProvider
+func Provider() terraform.ResourceProvider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
 			"client_secret": {
