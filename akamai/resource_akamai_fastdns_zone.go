@@ -1,18 +1,36 @@
 package akamai
 
 import (
+	"log"
+
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
-func resourceZone() *schema.Resource {
+func resourceAkamaiFastDNSZone() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceZoneCreate,
-		Read:   resourceZoneRead,
-		Update: resourceZoneUpdate,
-		Delete: resourceZoneDelete,
-
+		Create: resourceAkamaiFastDNSZoneCreate,
+		Read:   resourceAkamaiFastDNSZoneRead,
+		Update: resourceAkamaiFastDNSZoneUpdate,
+		Delete: resourceAkamaiFastDNSZoneDelete,
 		Schema: map[string]*schema.Schema{
-			"placeholder": &schema.Schema{
+			"contract_id": {
+				Type:     schema.TypeString,
+				Required: true,
+			},
+
+			"name": {
+				Type:     schema.TypeString,
+				Required: true,
+				ForceNew: true,
+			},
+
+			"comment": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Default:  "Managed by Terraform",
+			},
+
+			"type": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
@@ -20,18 +38,20 @@ func resourceZone() *schema.Resource {
 	}
 }
 
-func resourceZoneCreate(d *schema.ResourceData, m interface{}) error {
-	return resourceZoneRead(d, m)
+func resourceAkamaiFastDNSZoneCreate(d *schema.ResourceData, m interface{}) error {
+	input := d.Get("name").(string)
+	log.Printf("[DEBUG] Creating Route53 hosted zone: %s", input)
+	return resourceAkamaiFastDNSZoneRead(d, m)
 }
 
-func resourceZoneRead(d *schema.ResourceData, m interface{}) error {
+func resourceAkamaiFastDNSZoneRead(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func resourceZoneUpdate(d *schema.ResourceData, m interface{}) error {
-	return resourceZoneRead(d, m)
+func resourceAkamaiFastDNSZoneUpdate(d *schema.ResourceData, m interface{}) error {
+	return resourceAkamaiFastDNSZoneRead(d, m)
 }
 
-func resourceZoneDelete(d *schema.ResourceData, m interface{}) error {
+func resourceAkamaiFastDNSZoneDelete(d *schema.ResourceData, m interface{}) error {
 	return nil
 }

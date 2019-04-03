@@ -15,6 +15,16 @@ func dataSourceAkamaiFastDNSZone() *schema.Resource {
 				Optional: true,
 				Computed: true,
 			},
+			"name": {
+				Type:     schema.TypeString,
+				Required: true,
+				ForceNew: true,
+			},
+
+			"type": {
+				Type:     schema.TypeString,
+				Required: true,
+			},
 		},
 	}
 }
