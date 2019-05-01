@@ -41,7 +41,7 @@ func Provider() terraform.ResourceProvider {
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
-			"akamai_zone": resourceAkamaiFastDNSZone(),
+			"akamai_fastdns_zone": resourceAkamaiFastDNSZone(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"akamai_fastdns_zone": dataSourceAkamaiFastDNSZone(),
@@ -67,14 +67,6 @@ func init() {
 	}
 }
 
-type Config struct {
-	AccessToken  string
-	ClientSecret string
-	ClientToken  string
-	Host         string
-	EdgercFile   string
-}
-
 func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	config := Config{
 		AccessToken:  d.Get("access_token").(string),
@@ -83,5 +75,12 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		Host:         d.Get("host").(string),
 		EdgercFile:   d.Get("edgerc_file").(string),
 	}
-	return config, nil
+
+	client, err := config.Client()
+	if err != nil {
+		return nil, err
+
+	}
+
+	return client, nil
 }
