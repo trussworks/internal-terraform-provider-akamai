@@ -6,6 +6,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/trussworks/akamai-sdk-go/akamai"
 )
@@ -124,31 +125,77 @@ func resourceAkamaiFastDNSZoneUpdate(d *schema.ResourceData, m interface{}) erro
 func resourceAkamaiFastDNSZoneDelete(d *schema.ResourceData, m interface{}) error {
 	conn := m.(*AkamaiClient).client
 
-	input := &akamai.ZoneDeleteRequest{
-		Zones: []string{d.Id()},
-	}
+	// send the delete zone request. Akamai throws 500s sometimes, until
+	// they fix that bug we must retry until HTTP 201 (or timeout)
 	log.Printf("[DEBUG] Deleting Akamai FastDNS Hosted Zone: %s", d.Id())
-
-	output, resp, err := conn.FastDNSv2.DeleteZone(context.Background(), input)
-	for resp.StatusCode != 201 {
-		log.Printf("[WARN] Akamai FastDNS API error (%s). Retrying...", resp.StatusCode)
-		time.Sleep(5 * time.Second)
-		output, resp, err = conn.FastDNSv2.DeleteZone(context.Background(), input)
-	}
+	output, err := deleteFastDNSZone(conn, d.Id())
 	if err != nil {
-		return fmt.Errorf("error deleting Akamai FastDNS Zone (&s) error: %s", d.Id(), err)
+		return err
 	}
-	log.Printf("[DEBUG] Checking delete status of Akamai FastDNS Hosted Zone: %s", d.Id())
 
-	for {
-		zs, _, err := conn.FastDNSv2.DeleteZoneStatus(context.Background(), *output.RequestID)
-		if err != nil {
-			return fmt.Errorf("error deleting Akamai FastDNS Zone (&s) error: %s", d.Id(), err)
-		}
-
-		if *zs.IsComplete {
-			break
-		}
+	// make sure the zone really was deleted
+	rid := output.(*akamai.ZoneDeleteResponse).RequestID
+	_, err = checkDeleteFastDNSZone(conn, *rid)
+	if err != nil {
+		return err
 	}
+
 	return nil
+}
+
+func deleteFastDNSZone(conn *akamai.Client, zone string) (interface{}, error) {
+	wait := resource.StateChangeConf{
+		Pending:    []string{"rejected"},
+		Target:     []string{"accepted"},
+		Timeout:    5 * time.Minute,
+		MinTimeout: 1 * time.Second,
+		Refresh: func() (interface{}, string, error) {
+			z := []string{zone}
+			input := &akamai.ZoneDeleteRequest{
+				Zones: z,
+			}
+
+			output, resp, err := conn.FastDNSv2.DeleteZone(context.Background(), input)
+			// This is bad Go, as we'd really want to check the err first. Akamai throws
+			// intermittent HTTP 500 and 503 errors though, and often retrying gives us
+			// our expected HTTP 201. Until Akamai provides a stable endpoint we need this.
+			if resp.StatusCode == 500 || resp.StatusCode == 503 {
+				return 42, "rejected", nil
+			}
+
+			if err != nil {
+				e := fmt.Errorf("error deleting Akamai FastDNS Zone (%s) error: ", z, err)
+				return 42, "failure", e
+			}
+
+			return output, "accepted", nil
+		},
+	}
+	return wait.WaitForState()
+
+}
+
+func checkDeleteFastDNSZone(conn *akamai.Client, rid string) (interface{}, error) {
+	wait := resource.StateChangeConf{
+		Pending:    []string{"rejected"},
+		Target:     []string{"accepted"},
+		Timeout:    5 * time.Minute,
+		MinTimeout: 1 * time.Second,
+		Refresh: func() (interface{}, string, error) {
+			zs, _, err := conn.FastDNSv2.DeleteZoneStatus(context.Background(), rid)
+			if err != nil {
+				e := fmt.Errorf("error checking Akamai FastDNS delete status: %s", err)
+				return 42, "failure", e
+			}
+
+			if !*zs.IsComplete {
+				// if the delete has not completed, retry
+				return 42, "rejected", nil
+			}
+
+			return 42, "accepted", nil
+		},
+	}
+
+	return wait.WaitForState()
 }

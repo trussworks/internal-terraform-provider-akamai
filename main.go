@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/hashicorp/terraform/plugin"
 
-	"github.com/mojotalantikite/terraform-provider-akamai/akamai"
+	"github.com/trussworks/terraform-provider-akamai/akamai"
 )
 
 func main() {
