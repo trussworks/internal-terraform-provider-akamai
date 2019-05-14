@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"time"
 
+	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/trussworks/akamai-sdk-go/akamai"
 )
@@ -77,14 +79,9 @@ func resourceAkamaiFastDNSRecordCreate(d *schema.ResourceData, m interface{}) er
 		rec.Rdata = expandResourceRecords(recs, d.Get("type").(string))
 	}
 
-	// create the new records
-	_, resp, err := conn.FastDNSv2.CreateRecordSet(context.Background(), rec)
+	_, err = createFastDNSRecord(conn, rec)
 	if err != nil {
-		return fmt.Errorf("[ERR]: Error creating record set: %s", err)
-	}
-
-	if resp.StatusCode != 201 {
-		return fmt.Errorf("[ERR]: Could not create record set: HTTP %s", resp.Status)
+		return err
 	}
 
 	// generate an ID to use
@@ -95,6 +92,31 @@ func resourceAkamaiFastDNSRecordCreate(d *schema.ResourceData, m interface{}) er
 	}
 	d.SetId(strings.Join(vars, "_"))
 	return nil
+}
+
+func createFastDNSRecord(conn *akamai.Client, rec *akamai.RecordSetCreateRequest) (interface{}, error) {
+	wait := resource.StateChangeConf{
+		Pending:    []string{"rejected"},
+		Target:     []string{"accepted"},
+		Timeout:    5 * time.Minute,
+		MinTimeout: 1 * time.Second,
+		Refresh: func() (interface{}, string, error) {
+
+			output, resp, err := conn.FastDNSv2.CreateRecordSet(context.Background(), rec)
+			if resp.StatusCode == 500 || resp.StatusCode == 503 {
+				return 42, "rejected", nil
+			}
+
+			if err != nil {
+				e := fmt.Errorf("[ERR]: Error creating record set: %s", err)
+				return 42, "failure", e
+
+			}
+
+			return output, "accepted", nil
+		},
+	}
+	return wait.WaitForState()
 }
 func resourceAkamaiFastDNSRecordRead(d *schema.ResourceData, m interface{}) error {
 	return nil
