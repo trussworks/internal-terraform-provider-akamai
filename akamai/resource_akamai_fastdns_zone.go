@@ -68,6 +68,25 @@ func resourceAkamaiFastDNSZoneCreate(d *schema.ResourceData, m interface{}) erro
 	}
 
 	log.Printf("[DEBUG] Akamai FastDNS Hosted Zone Created: %v", *output.Zone)
+	log.Printf("[DEBUG] Setting SOA and NS records. Akamai does not apply these by default.")
+
+	cli := &akamai.ChangeListOptions{
+		Zone: input.Zone,
+	}
+
+	clo, _, err := conn.FastDNSv2.CreateChangeList(context.Background(), cli)
+	if err != nil {
+		return fmt.Errorf("error creating Akamai FastDNS change list: %s", err)
+	}
+
+	if clo.Stale {
+		return fmt.Errorf("Akamai changelist was stale. Must be current to apply.")
+	}
+
+	_, err = conn.FastDNSv2.SubmitChangeList(context.Background(), input.Zone)
+	if err != nil {
+		return fmt.Errorf("error submitting Akamai FastDNS change list: %s", err)
+	}
 
 	d.SetId(*output.Zone)
 
