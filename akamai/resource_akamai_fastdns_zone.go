@@ -32,6 +32,13 @@ func resourceAkamaiFastDNSZone() *schema.Resource {
 			"type": {
 				Type:     schema.TypeString,
 				Required: true,
+				ValidateFunc: func(v interface{}, k string) (ws []string, es []error) {
+					value := v.(string)
+					if value != "PRIMARY" && value != "SECONDARY" && value != "ALIAS" {
+						es = append(es, fmt.Errorf("Type must be PRIMARY, SECONDARY, or ALIAS"))
+					}
+					return
+				},
 			},
 
 			"sign_and_serve": {
@@ -121,6 +128,9 @@ func resourceAkamaiFastDNSZoneRead(d *schema.ResourceData, m interface{}) error 
 
 func resourceAkamaiFastDNSZoneUpdate(d *schema.ResourceData, m interface{}) error {
 	conn := m.(*AkamaiClient).client
+
+	d.Partial(true)
+
 	if d.HasChange("comment") {
 		input := &akamai.ZoneCreateRequest{
 			Zone:    d.Id(),
@@ -133,7 +143,6 @@ func resourceAkamaiFastDNSZoneUpdate(d *schema.ResourceData, m interface{}) erro
 		}
 
 		d.SetPartial("comment")
-
 	}
 
 	d.Partial(false)
