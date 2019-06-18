@@ -9,6 +9,9 @@ build: fmtcheck
 test: fmtcheck
 	go test $(TEST) -timeout=30s -parallel=4
 
+testacc: fmtcheck
+	TF_ACC=1 go test $(TEST) -v -parallel 20 $(TESTARGS) -timeout 120m
+
 fmt:
 	@echo "==> Fixing source code with gofmt..."
 	gofmt -s -w ./$(PKG_NAME)
@@ -16,4 +19,4 @@ fmt:
 fmtcheck:
 	@sh -c "'$(CURDIR)/scripts/gofmtcheck.sh'"
 
-.PHONY: build test fmt fmtcheck
+.PHONY: build test testacc fmt fmtcheck

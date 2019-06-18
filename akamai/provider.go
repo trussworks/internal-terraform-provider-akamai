@@ -44,6 +44,9 @@ func Provider() terraform.ResourceProvider {
 			"akamai_fastdns_zone":   resourceAkamaiFastDNSZone(),
 			"akamai_fastdns_record": resourceAkamaiFastDNSRecord(),
 		},
+		DataSourcesMap: map[string]*schema.Resource{
+			"akamai_fastdns_zone": dataSourceAkamaiFastDNSZone(),
+		},
 		ConfigureFunc: providerConfigure,
 	}
 }
