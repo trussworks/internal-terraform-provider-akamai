@@ -38,7 +38,6 @@ func TestProvider(t *testing.T) {
 }
 
 func testAccPreCheck(t *testing.T) {
-	var envf string
 	if envf := os.Getenv("AKAMAI_ENVRC_FILE"); envf != "" {
 		_, err := ioutil.ReadFile(envf)
 		if err != nil {
@@ -46,10 +45,10 @@ func testAccPreCheck(t *testing.T) {
 		}
 	}
 
-	// Make sure env vars are set if we're not reading from .envrc
+	// Make sure we can read from env variables if we haven't specified AKAMAI_ENVRC_FILE
 	for _, k := range credsEnvVars {
-		if v := os.Getenv(k); v != "" && envf == "" {
-			t.Fatalf("%s must be set if .envrc file not found.", v)
+		if v := os.Getenv(k); v == "" {
+			t.Fatalf("%s must be set if .envrc file not found.", k)
 		}
 	}
 }
