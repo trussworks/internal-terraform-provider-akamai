@@ -10,6 +10,7 @@ import (
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform/helper/validation"
 	"github.com/trussworks/akamai-sdk-go/akamai"
 )
 
@@ -28,6 +29,10 @@ func resourceAkamaiFastDNSRecord() *schema.Resource {
 			"name": {
 				Type:     schema.TypeString,
 				Required: true,
+				StateFunc: func(v interface{}) string {
+					value := strings.TrimSuffix(v.(string), ".")
+					return strings.ToLower(value)
+				},
 			},
 
 			"rdata": {
@@ -46,11 +51,25 @@ func resourceAkamaiFastDNSRecord() *schema.Resource {
 			"type": {
 				Type:     schema.TypeString,
 				Required: true,
+				ValidateFunc: validation.StringInSlice([]string{
+					akamai.RRTypeA,
+					akamai.RRTypeTxt,
+					akamai.RRTypeNs,
+					akamai.RRTypeCname,
+					akamai.RRTypeMx,
+					akamai.RRTypeNaptr,
+					akamai.RRTypePtr,
+					akamai.RRTypeSrv,
+					akamai.RRTypeSpf,
+					akamai.RRTypeAaaa,
+					akamai.RRTypeCaa,
+				}, false),
 			},
 
 			"zone": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validation.NoZeroValues,
 			},
 
 			"fqdn": {

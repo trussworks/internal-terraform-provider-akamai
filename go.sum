@@ -293,6 +293,8 @@ github.com/trussworks/akamai-sdk-go v0.0.0-20190530184104-c6100b22dfcd h1:ZnbEHS
 github.com/trussworks/akamai-sdk-go v0.0.0-20190530184104-c6100b22dfcd/go.mod h1:OCbGDXW3+FT4S6vBpfmBaOGJwqmURDASMnC8Jj6blg0=
 github.com/trussworks/akamai-sdk-go v0.0.0-20190606154229-d1794fd9f6a2 h1:AhcobqX/lpfwAgy/g6ADmV+mSm76rObSAvn9J8nr+eY=
 github.com/trussworks/akamai-sdk-go v0.0.0-20190606154229-d1794fd9f6a2/go.mod h1:OCbGDXW3+FT4S6vBpfmBaOGJwqmURDASMnC8Jj6blg0=
+github.com/trussworks/akamai-sdk-go v0.0.0-20190701185604-23f10c0e1b75 h1:aFbU+w0TuM95qxrIpu2oSxCW8KYwowDLkLzJ+0VvOG0=
+github.com/trussworks/akamai-sdk-go v0.0.0-20190701185604-23f10c0e1b75/go.mod h1:OCbGDXW3+FT4S6vBpfmBaOGJwqmURDASMnC8Jj6blg0=
 github.com/ugorji/go v0.0.0-20180813092308-00b869d2f4a5/go.mod h1:hnLbHMwcvSihnDhEfx2/BzKp2xb0Y+ErdfYcrs9tkJQ=
 github.com/ulikunitz/xz v0.5.5 h1:pFrO0lVpTBXLpYw+pnLj6TbvHuyjXMfjGeCwSqCVwok=
 github.com/ulikunitz/xz v0.5.5/go.mod h1:2bypXElzHzzJZwzH67Y6wb67pO62Rzfn7BSiF4ABRW8=
