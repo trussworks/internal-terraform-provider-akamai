@@ -10,7 +10,9 @@ Terraform Provider for Akamai FastDNS
 Terraform Provider for Akamai FastDNS
 ------------
 
-This provider was built internally by Truss to support Akamai's FastDNS v2. Akamai has since released a Terraform provider that has been accepted as official by Hashicorp. Please only use this as reference and use the official provider.
+This provider was built internally by Truss to support Akamai's FastDNS v2. Akamai has since released a Terraform provider that has been accepted as official by Hashicorp. Please only use this as reference. Truss will be contributing changes to the official repository from now on.
+
+Official [terraform-provider-akamai](https://github.com/terraform-providers/terraform-provider-akamai).
 
 Requirements
 ------------
